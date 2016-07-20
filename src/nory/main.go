@@ -9,6 +9,7 @@ import (
 	"github.com/urfave/cli"
 
 	"artifact"
+	"gradle"
 )
 
 func main() {
@@ -27,6 +28,18 @@ func main() {
 				}
 
 				renderResult(arts)
+
+				return nil
+			},
+		},
+
+		{
+			Name:    "install",
+			Aliases: []string{"i"},
+			Usage:   "install artifact",
+			Action: func(c *cli.Context) error {
+				// gradle.Read()
+				gradle.Add(c.Args().First())
 
 				return nil
 			},
