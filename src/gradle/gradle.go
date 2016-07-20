@@ -23,18 +23,15 @@ func Add(art string) {
 	var isAlreadyAdded bool
 
 	Parse(func(state int, line string) {
-		var needToSkip bool
-
 		switch state {
 		case stateDependency:
 			art2 := getArt(line)
-			if art2 != "" {
-				if artifact.IsSameArtifact(art, art2) {
-					printDependency(artifact.GetLatest(art, art2))
+			if art2 != "" && artifact.IsSameArtifact(art, art2) {
+				printDependency(artifact.GetLatest(art, art2))
 
-					isAlreadyAdded = true
-					needToSkip = true
-				}
+				isAlreadyAdded = true
+
+				return
 			}
 
 		case stateEndOfDependencies:
@@ -43,9 +40,7 @@ func Add(art string) {
 			}
 		}
 
-		if !needToSkip {
-			fmt.Println(line)
-		}
+		fmt.Println(line)
 	})
 }
 
@@ -91,18 +86,6 @@ func Parse(callback func(int, string)) {
 	}
 }
 
-// re := regexp.MustCompile(`(\s*)compile\s'(.+):(.+):(.+)'`)
-// match := re.FindStringSubmatch(line)
-//
-// if len(match) == 0 {
-//   // fmt.Println(line)
-//   callback(0, line)
-// } else {
-//   // fmt.Print(match[1])
-//   // fmt.Println(match[2:])
-//   callback(1, line)
-// }
-
 func Read() {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -126,19 +109,6 @@ func Read() {
 		}
 	}
 }
-
-// func Read2() {
-// 	lines, err := Parse()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-//
-// 	fmt.Print(lines[0])
-// 	fmt.Println("===============")
-// 	fmt.Print(lines[1])
-// 	fmt.Println("===============")
-// 	fmt.Print(lines[2])
-// }
 
 func Parse2() ([]string, error) {
 	var result []string

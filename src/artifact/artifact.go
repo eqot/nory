@@ -6,18 +6,8 @@ type Artifact interface {
 	Find(term string) ([]string, error)
 }
 
-func GetLatest(art1, art2 string) string {
-	if !IsSameArtifact(art1, art2) {
-		return ""
-	}
-
-	arts1 := Split(art1)
-	arts2 := Split(art2)
-
-	if arts1[2] > arts2[2] {
-		return art1
-	}
-	return art2
+func Split(art string) []string {
+	return strings.Split(art, ":")
 }
 
 func IsSameArtifact(art1, art2 string) bool {
@@ -31,6 +21,16 @@ func IsSameArtifact(art1, art2 string) bool {
 	return false
 }
 
-func Split(art string) []string {
-	return strings.Split(art, ":")
+func GetLatest(art1, art2 string) string {
+	if !IsSameArtifact(art1, art2) {
+		return ""
+	}
+
+	arts1 := Split(art1)
+	arts2 := Split(art2)
+
+	if arts1[2] > arts2[2] {
+		return art1
+	}
+	return art2
 }
