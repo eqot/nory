@@ -11,6 +11,7 @@ import (
 )
 
 const filename string = "./app/build.gradle"
+const tmpFilename string = "./app/build.gradle.tmp"
 
 const (
 	stateNormal = iota
@@ -20,14 +21,14 @@ const (
 )
 
 func Add(art string) {
+	var buffer string
 	var isAlreadyAdded bool
-
 	Parse(func(state int, line string) {
 		switch state {
 		case stateDependency:
 			art2 := getArt(line)
 			if art2 != "" && artifact.IsSameArtifact(art, art2) {
-				printDependency(artifact.GetLatest(art, art2))
+				buffer = injectDependency(buffer, artifact.GetLatest(art, art2))
 
 				isAlreadyAdded = true
 
@@ -36,16 +37,31 @@ func Add(art string) {
 
 		case stateEndOfDependencies:
 			if !isAlreadyAdded {
-				printDependency(art)
+				buffer = injectDependency(buffer, art)
 			}
 		}
 
-		fmt.Println(line)
+		buffer = fmt.Sprintf("%s%s\n", buffer, line)
 	})
+
+	fo, err := os.Create(tmpFilename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fo.Close()
+
+	so := bufio.NewWriter(fo)
+	defer so.Flush()
+
+	so.WriteString(buffer)
+
+	if err := os.Rename(tmpFilename, filename); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func printDependency(art string) {
-	fmt.Printf("    compile '%s'\n", art)
+func injectDependency(buffer, art string) string {
+	return fmt.Sprintf("%s    compile '%s'\n", buffer, art)
 }
 
 func getArt(line string) string {
