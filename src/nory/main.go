@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -13,15 +14,15 @@ import (
 )
 
 func main() {
-	app := cli.NewApp()
+	artifact := &artifact.Maven{}
 
+	app := cli.NewApp()
 	app.Commands = []cli.Command{
 		{
 			Name:    "search",
 			Aliases: []string{"s"},
 			Usage:   "search artifact",
 			Action: func(c *cli.Context) error {
-				artifact := &artifact.Maven{}
 				arts, err := artifact.Find(c.Args().First())
 				if err != nil {
 					log.Fatal(err)
@@ -38,8 +39,16 @@ func main() {
 			Aliases: []string{"i"},
 			Usage:   "install artifact",
 			Action: func(c *cli.Context) error {
-				// gradle.Read()
-				gradle.Add(c.Args().First())
+				arts, err := artifact.Find(c.Args().First())
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				gradle.Add(arts[0])
+
+				renderResult([]string{arts[0]})
+
+				fmt.Println("\u2713 Successfully installed.")
 
 				return nil
 			},
