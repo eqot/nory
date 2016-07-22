@@ -101,3 +101,19 @@ func Parse(callback func(int, string)) {
 		callback(state, line)
 	}
 }
+
+func GetArtifacts() []string {
+	var arts []string
+
+	Parse(func(state int, line string) {
+		switch state {
+		case stateDependency:
+			art := getArt(line)
+			if art != "" {
+				arts = append(arts, art)
+			}
+		}
+	})
+
+	return arts
+}

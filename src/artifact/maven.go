@@ -27,7 +27,16 @@ type artifact struct {
 func (m *Maven) Find(term string) ([]string, error) {
 	var arts []string
 
-	res, err := http.Get(url + term)
+	var query string
+
+	terms := Split(term)
+	if len(terms) > 1 {
+		query = "a:\"" + terms[1] + "\"+AND+g:\"" + terms[0] + "\""
+	} else {
+		query = term
+	}
+
+	res, err := http.Get(url + query)
 	if err != nil {
 		return arts, err
 	}
@@ -44,4 +53,16 @@ func (m *Maven) Find(term string) ([]string, error) {
 	}
 
 	return arts, nil
+}
+
+func (m *Maven) GetLatestVersion(art string) string {
+	arts, _ := m.Find(art)
+
+	if len(arts) == 0 {
+		return ""
+	}
+
+	version := Split(arts[0])[2]
+
+	return version
 }

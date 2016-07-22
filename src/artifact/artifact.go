@@ -4,6 +4,7 @@ import "strings"
 
 type Artifact interface {
 	Find(term string) ([]string, error)
+	GetLatestVersion(art string) string
 }
 
 func Split(art string) []string {
