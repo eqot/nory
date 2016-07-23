@@ -62,7 +62,9 @@ func (m *Maven) GetLatestVersion(art string) string {
 		return ""
 	}
 
-	version := Split(arts[0])[2]
+	return arts[0]
 
-	return version
+	// version := Split(arts[0])[2]
+	//
+	// return version
 }
