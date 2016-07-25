@@ -5,16 +5,28 @@ import "testing"
 func TestSplit(t *testing.T) {
 	art := Split("foo:bar:1.2.3")
 
-	if art[0] != "foo" {
-		t.Errorf("For group ID, got %q; expected %q", art[0], "foo")
+	expectedGroupID := "foo"
+	if art[0] != expectedGroupID {
+		t.Errorf("For group ID, got %q; expected %q", art[0], expectedGroupID)
 	}
 
-	if art[1] != "bar" {
-		t.Errorf("For artifact ID, got %q; expected %q", art[1], "bar")
+	expectedArtifactID := "bar"
+	if art[1] != expectedArtifactID {
+		t.Errorf("For artifact ID, got %q; expected %q", art[1], expectedArtifactID)
 	}
 
-	if art[2] != "1.2.3" {
-		t.Errorf("For version, got %q; expected %q", art[2], "1.2.3")
+	expectedVersion := "1.2.3"
+	if art[2] != expectedVersion {
+		t.Errorf("For version, got %q; expected %q", art[2], expectedVersion)
+	}
+}
+
+func TestGetVersion(t *testing.T) {
+	version := GetVersion("foo:bar:1.2.3")
+
+	expectedVersion := "1.2.3"
+	if version != expectedVersion {
+		t.Errorf("For version, got %q; expected %q", version, expectedVersion)
 	}
 }
 

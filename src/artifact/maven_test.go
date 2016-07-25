@@ -34,9 +34,9 @@ func TestFind(t *testing.T) {
 	ts := httptest.NewServer(testHandler)
 	defer ts.Close()
 
-	artifact := &Maven{host: ts.URL}
+	artifactRepo := &Maven{host: ts.URL}
 
-	arts, err := artifact.Find("rxjava")
+	arts, err := artifactRepo.Find("rxjava")
 	if err != nil {
 		t.Errorf("Error %q", err)
 	}
@@ -45,7 +45,7 @@ func TestFind(t *testing.T) {
 		t.Errorf("For artifact, got %q; expected %q", arts[0], expectedArt)
 	}
 
-	arts, err = artifact.Find("io.reactivex:rxjava")
+	arts, err = artifactRepo.Find("io.reactivex:rxjava")
 	if err != nil {
 		t.Errorf("Error %q", err)
 	}
@@ -59,9 +59,9 @@ func TestGetLatestVersion(t *testing.T) {
 	ts := httptest.NewServer(testHandler)
 	defer ts.Close()
 
-	artifact := &Maven{host: ts.URL}
+	artifactRepo := &Maven{host: ts.URL}
 
-	art, err := artifact.GetLatestVersion("rxjava")
+	art, err := artifactRepo.GetLatestVersion("rxjava")
 	if err != nil {
 		t.Errorf("Error %q", err)
 	}

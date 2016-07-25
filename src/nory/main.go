@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
@@ -15,7 +14,7 @@ import (
 )
 
 func main() {
-	artifact := &artifact.Maven{}
+	artifactRepo := &artifact.Maven{}
 
 	app := cli.NewApp()
 	app.Commands = []cli.Command{
@@ -24,7 +23,7 @@ func main() {
 			Aliases: []string{"s"},
 			Usage:   "search artifact",
 			Action: func(c *cli.Context) error {
-				arts, err := artifact.Find(c.Args().First())
+				arts, err := artifactRepo.Find(c.Args().First())
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -40,7 +39,7 @@ func main() {
 			Aliases: []string{"i"},
 			Usage:   "install artifact",
 			Action: func(c *cli.Context) error {
-				arts, err := artifact.Find(c.Args().First())
+				arts, err := artifactRepo.Find(c.Args().First())
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -65,19 +64,19 @@ func main() {
 				numOfArts := 0
 				var latestArts []string
 				for _, art := range arts {
-					latestArt, _ := artifact.GetLatestVersion(art)
+					latestArt, _ := artifactRepo.GetLatestVersion(art)
 					if latestArt == "" {
 						continue
 					}
 
-					version := strings.Split(latestArt, ":")[2]
+					latestVersion := artifact.GetVersion(latestArt)
 
-					if strings.Split(art, ":")[2] < version {
-						version = highlight(version)
+					if artifact.GetVersion(art) < latestVersion {
+						latestVersion = highlight(latestVersion)
 						numOfArts++
 					}
 
-					latestArts = append(latestArts, art+":"+version)
+					latestArts = append(latestArts, art+":"+latestVersion)
 				}
 
 				renderResult(latestArts)
@@ -101,18 +100,18 @@ func main() {
 
 				var latestArts []string
 				for _, art := range arts {
-					latestArt, _ := artifact.GetLatestVersion(art)
+					latestArt, _ := artifactRepo.GetLatestVersion(art)
 					if latestArt == "" {
 						continue
 					}
 
-					version := strings.Split(latestArt, ":")[2]
+					latestVersion := artifact.GetVersion(latestArt)
 
-					if strings.Split(art, ":")[2] < strings.Split(latestArt, ":")[2] {
+					if artifact.GetVersion(art) < latestVersion {
 						gradle.Add(latestArt)
 
-						version = highlight(version)
-						latestArts = append(latestArts, art+":"+version)
+						latestVersion = highlight(latestVersion)
+						latestArts = append(latestArts, art+":"+latestVersion)
 					}
 				}
 

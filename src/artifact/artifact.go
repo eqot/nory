@@ -2,13 +2,12 @@ package artifact
 
 import "strings"
 
-type Artifact interface {
-	Find(term string) ([]string, error)
-	GetLatestVersion(art string) string
-}
-
 func Split(art string) []string {
 	return strings.Split(art, ":")
+}
+
+func GetVersion(art string) string {
+	return Split(art)[2]
 }
 
 func IsSameArtifact(art1, art2 string) bool {
