@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// Maven struct
 type Maven struct {
 	host string
 }
@@ -29,6 +30,7 @@ type artifact struct {
 	Version    string `json:"latestVersion"`
 }
 
+// Find returns an arrays of found artifacts
 func (m *Maven) Find(term string) ([]string, error) {
 	var arts []string
 
@@ -67,6 +69,7 @@ func (m *Maven) Find(term string) ([]string, error) {
 	return arts, nil
 }
 
+// GetLatestVersion returns the latest version of the specified artifact
 func (m *Maven) GetLatestVersion(art string) (string, error) {
 	arts, err := m.Find(art)
 	if err != nil {

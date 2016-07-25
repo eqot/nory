@@ -20,6 +20,7 @@ const (
 	stateEndOfDependencies
 )
 
+// Add injects an artifact into build.gradle
 func Add(art string) {
 	var buffer string
 	var isAlreadyAdded bool
@@ -74,6 +75,7 @@ func getArt(line string) string {
 	return ""
 }
 
+// Parse loads build.gradle and call the specified callback with each line
 func Parse(callback func(int, string)) {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -102,6 +104,7 @@ func Parse(callback func(int, string)) {
 	}
 }
 
+// GetArtifacts returns an array of artifacts in build.gradle
 func GetArtifacts() []string {
 	var arts []string
 

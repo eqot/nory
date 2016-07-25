@@ -2,14 +2,17 @@ package artifact
 
 import "strings"
 
+// Split returns []string from string for getting group ID, artifact ID and version
 func Split(art string) []string {
 	return strings.Split(art, ":")
 }
 
+// GetVersion returns artifact version
 func GetVersion(art string) string {
 	return Split(art)[2]
 }
 
+// IsSameArtifact returns boolean if specified artifacts are the same
 func IsSameArtifact(art1, art2 string) bool {
 	arts1 := Split(art1)
 	arts2 := Split(art2)
@@ -21,6 +24,7 @@ func IsSameArtifact(art1, art2 string) bool {
 	return false
 }
 
+// GetLatest returns the latest artifact from specified artifacts
 func GetLatest(art1, art2 string) string {
 	if !IsSameArtifact(art1, art2) {
 		return ""
