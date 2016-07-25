@@ -65,7 +65,7 @@ func main() {
 				numOfArts := 0
 				var latestArts []string
 				for _, art := range arts {
-					latestArt := artifact.GetLatestVersion(art)
+					latestArt, _ := artifact.GetLatestVersion(art)
 					if latestArt == "" {
 						continue
 					}
@@ -101,7 +101,7 @@ func main() {
 
 				var latestArts []string
 				for _, art := range arts {
-					latestArt := artifact.GetLatestVersion(art)
+					latestArt, _ := artifact.GetLatestVersion(art)
 					if latestArt == "" {
 						continue
 					}

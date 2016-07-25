@@ -2,13 +2,18 @@ package artifact
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
 type Maven struct {
+	host string
 }
 
-const url string = "https://search.maven.org/solrsearch/select?rows=20&wt=json&q="
+const (
+	defaultHost string = "https://search.maven.org"
+	defaultPath string = "/solrsearch/select?rows=20&wt=json&q="
+)
 
 type response struct {
 	Response *docs `json:"response"`
@@ -36,7 +41,14 @@ func (m *Maven) Find(term string) ([]string, error) {
 		query = term
 	}
 
-	res, err := http.Get(url + query)
+	var url string
+	if m.host != "" {
+		url = m.host
+	} else {
+		url = defaultHost
+	}
+
+	res, err := http.Get(url + defaultPath + query)
 	if err != nil {
 		return arts, err
 	}
@@ -55,16 +67,15 @@ func (m *Maven) Find(term string) ([]string, error) {
 	return arts, nil
 }
 
-func (m *Maven) GetLatestVersion(art string) string {
-	arts, _ := m.Find(art)
-
-	if len(arts) == 0 {
-		return ""
+func (m *Maven) GetLatestVersion(art string) (string, error) {
+	arts, err := m.Find(art)
+	if err != nil {
+		return "", err
 	}
 
-	return arts[0]
+	if len(arts) == 0 {
+		return "", fmt.Errorf("No artifacts found")
+	}
 
-	// version := Split(arts[0])[2]
-	//
-	// return version
+	return arts[0], nil
 }
