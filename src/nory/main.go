@@ -75,7 +75,6 @@ func main() {
 
 						latestArt, _ := artifactRepo.GetLatestVersion(art2)
 						if latestArt == "" {
-							ch <- ""
 							return
 						}
 
@@ -92,10 +91,12 @@ func main() {
 				wg.Wait()
 
 				var latestArts []string
-				for range arts {
+				for {
 					latestArt := <-ch
-					if latestArt != "" {
-						latestArts = append(latestArts, latestArt)
+					latestArts = append(latestArts, latestArt)
+
+					if len(ch) == 0 {
+						break
 					}
 				}
 
