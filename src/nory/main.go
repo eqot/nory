@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
@@ -61,27 +62,27 @@ func main() {
 			Action: func(c *cli.Context) error {
 				arts := gradle.GetArtifacts()
 
-				numOfArts := 0
-				var latestArts []string
+				var wg sync.WaitGroup
+				ch := make(chan string, 64)
+
 				for _, art := range arts {
-					latestArt, _ := artifactRepo.GetLatestVersion(art)
-					if latestArt == "" {
-						continue
+					wg.Add(1)
+					go getLatestVersion(art, ch, &wg)
+				}
+
+				wg.Wait()
+
+				var latestArts []string
+				for range arts {
+					latestArt := <-ch
+					if latestArt != "" {
+						latestArts = append(latestArts, latestArt)
 					}
-
-					latestVersion := artifact.GetVersion(latestArt)
-
-					if artifact.GetVersion(art) < latestVersion {
-						latestVersion = highlight(latestVersion)
-						numOfArts++
-					}
-
-					latestArts = append(latestArts, art+":"+latestVersion)
 				}
 
 				renderResult(latestArts)
 
-				if numOfArts > 0 {
+				if len(latestArts) > 0 {
 					fmt.Println("Artifact(s) can be updated.")
 				} else {
 					fmt.Println("No outdated artifacts.")
@@ -129,6 +130,26 @@ func main() {
 	}
 
 	app.Run(os.Args)
+}
+
+func getLatestVersion(art string, ch chan<- string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	artifactRepo := &artifact.Maven{}
+
+	latestArt, _ := artifactRepo.GetLatestVersion(art)
+	if latestArt == "" {
+		ch <- ""
+		return
+	}
+
+	latestVersion := artifact.GetVersion(latestArt)
+
+	if artifact.GetVersion(art) < latestVersion {
+		latestVersion = highlight(latestVersion)
+	}
+
+	ch <- art + ":" + latestVersion
 }
 
 func renderResult(arts []string) {
