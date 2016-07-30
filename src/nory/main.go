@@ -67,7 +67,26 @@ func main() {
 
 				for _, art := range arts {
 					wg.Add(1)
-					go getLatestVersion(art, ch, &wg)
+
+					go func(art2 string) {
+						defer wg.Done()
+
+						artifactRepo := &artifact.Maven{}
+
+						latestArt, _ := artifactRepo.GetLatestVersion(art2)
+						if latestArt == "" {
+							ch <- ""
+							return
+						}
+
+						latestVersion := artifact.GetVersion(latestArt)
+
+						if artifact.GetVersion(art2) < latestVersion {
+							latestVersion = highlight(latestVersion)
+						}
+
+						ch <- art2 + ":" + latestVersion
+					}(art)
 				}
 
 				wg.Wait()
@@ -130,26 +149,6 @@ func main() {
 	}
 
 	app.Run(os.Args)
-}
-
-func getLatestVersion(art string, ch chan<- string, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	artifactRepo := &artifact.Maven{}
-
-	latestArt, _ := artifactRepo.GetLatestVersion(art)
-	if latestArt == "" {
-		ch <- ""
-		return
-	}
-
-	latestVersion := artifact.GetVersion(latestArt)
-
-	if artifact.GetVersion(art) < latestVersion {
-		latestVersion = highlight(latestVersion)
-	}
-
-	ch <- art + ":" + latestVersion
 }
 
 func renderResult(arts []string) {
