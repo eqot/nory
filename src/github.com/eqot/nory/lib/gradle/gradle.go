@@ -7,7 +7,7 @@ import (
 	"os"
 	"regexp"
 
-	"artifact"
+	"github.com/eqot/nory/lib/artifact"
 )
 
 const filename string = "./app/build.gradle"

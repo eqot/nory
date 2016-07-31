@@ -10,8 +10,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli"
 
-	"artifact"
-	"gradle"
+	"github.com/eqot/nory/lib/artifact"
+	"github.com/eqot/nory/lib/gradle"
 )
 
 func main() {
