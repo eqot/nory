@@ -91,13 +91,9 @@ func main() {
 				wg.Wait()
 
 				var latestArts []string
-				for {
+				for len(ch) > 0 {
 					latestArt := <-ch
 					latestArts = append(latestArts, latestArt)
-
-					if len(ch) == 0 {
-						break
-					}
 				}
 
 				renderResult(latestArts)
