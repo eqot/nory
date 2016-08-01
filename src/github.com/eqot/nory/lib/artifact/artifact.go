@@ -1,6 +1,9 @@
 package artifact
 
-import "strings"
+import (
+	"strings"
+	"sync"
+)
 
 // Split returns []string from string for getting group ID, artifact ID and version
 func Split(art string) []string {
@@ -37,4 +40,27 @@ func GetLatest(art1, art2 string) string {
 		return art1
 	}
 	return art2
+}
+
+// GetArtifactWithLatestVersion returns artifact with latest version
+func GetArtifactWithLatestVersion(art string, ch chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	artifactRepo := &Maven{}
+
+	latestArt, _ := artifactRepo.GetLatestVersion(art)
+	if latestArt == "" {
+		return
+	}
+
+	latestVersion := GetVersion(latestArt)
+
+	ch <- art + ":" + latestVersion
+}
+
+// IsUpdatable returns flag if specified artifact can be updatable
+func IsUpdatable(art string) bool {
+	arts := Split(art)
+
+	return arts[2] < arts[3]
 }

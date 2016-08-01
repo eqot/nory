@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/fatih/color"
@@ -60,45 +61,11 @@ func main() {
 			Aliases: []string{"c"},
 			Usage:   "check if artifacts can be updated",
 			Action: func(c *cli.Context) error {
-				arts := gradle.GetArtifacts()
+				updatableArts := getUpdatableArtifacts()
+				updatableArts = highlightUpdatableArtifacts(updatableArts)
+				renderResult(updatableArts)
 
-				var wg sync.WaitGroup
-				ch := make(chan string, 64)
-
-				for _, art := range arts {
-					wg.Add(1)
-
-					go func(art2 string) {
-						defer wg.Done()
-
-						artifactRepo := &artifact.Maven{}
-
-						latestArt, _ := artifactRepo.GetLatestVersion(art2)
-						if latestArt == "" {
-							return
-						}
-
-						latestVersion := artifact.GetVersion(latestArt)
-
-						if artifact.GetVersion(art2) < latestVersion {
-							latestVersion = highlight(latestVersion)
-						}
-
-						ch <- art2 + ":" + latestVersion
-					}(art)
-				}
-
-				wg.Wait()
-
-				var latestArts []string
-				for len(ch) > 0 {
-					latestArt := <-ch
-					latestArts = append(latestArts, latestArt)
-				}
-
-				renderResult(latestArts)
-
-				if len(latestArts) > 0 {
+				if len(updatableArts) > 0 {
 					fmt.Println("Artifact(s) can be updated.")
 				} else {
 					fmt.Println("No outdated artifacts.")
@@ -113,28 +80,19 @@ func main() {
 			Aliases: []string{"u"},
 			Usage:   "update outdated artifacts if exists",
 			Action: func(c *cli.Context) error {
-				arts := gradle.GetArtifacts()
+				updatableArts := getUpdatableArtifacts()
 
-				var latestArts []string
-				for _, art := range arts {
-					latestArt, _ := artifactRepo.GetLatestVersion(art)
-					if latestArt == "" {
-						continue
-					}
+				for _, art := range updatableArts {
+					arts := artifact.Split(art)
+					latestArt := arts[0] + ":" + arts[1] + ":" + arts[3]
 
-					latestVersion := artifact.GetVersion(latestArt)
-
-					if artifact.GetVersion(art) < latestVersion {
-						gradle.Add(latestArt)
-
-						latestVersion = highlight(latestVersion)
-						latestArts = append(latestArts, art+":"+latestVersion)
-					}
+					gradle.Add(latestArt)
 				}
 
-				renderResult(latestArts)
+				updatableArts = highlightUpdatableArtifacts(updatableArts)
+				renderResult(updatableArts)
 
-				if len(latestArts) > 0 {
+				if len(updatableArts) > 0 {
 					fmt.Printf("%s Successfully updated.\n", highlight("\u2713"))
 				} else {
 					fmt.Println("No outdated artifacts.")
@@ -146,6 +104,58 @@ func main() {
 	}
 
 	app.Run(os.Args)
+}
+
+func getUpdatableArtifacts() []string {
+	arts := gradle.GetArtifacts()
+
+	ch := make(chan string, 64)
+	var wg sync.WaitGroup
+
+	for _, art := range arts {
+		wg.Add(1)
+
+		go artifact.GetArtifactWithLatestVersion(art, ch, &wg)
+	}
+
+	wg.Wait()
+
+	var updatableArts []string
+	for len(ch) > 0 {
+		art := <-ch
+
+		if artifact.IsUpdatable(art) {
+			updatableArts = append(updatableArts, art)
+		}
+	}
+
+	return updatableArts
+}
+
+func highlightUpdatableArtifacts(arts []string) []string {
+	var result []string
+
+	for _, art := range arts {
+		if artifact.IsUpdatable(art) {
+			art = highlightColumn(art, 3)
+		}
+
+		result = append(result, art)
+	}
+
+	return result
+}
+
+func highlightColumn(art string, index int) string {
+	arts := artifact.Split(art)
+
+	arts[index] = highlight(arts[index])
+
+	return strings.Join(arts, ":")
+}
+
+func highlight(text string) string {
+	return color.New(color.FgGreen).SprintFunc()(text)
 }
 
 func renderResult(arts []string) {
@@ -174,8 +184,4 @@ func renderResult(arts []string) {
 	}
 
 	table.Render()
-}
-
-func highlight(text string) string {
-	return color.New(color.FgGreen).SprintFunc()(text)
 }
