@@ -43,7 +43,7 @@ func GetLatest(art1, art2 string) string {
 }
 
 // GetArtifactWithLatestVersion returns artifact with latest version
-func GetArtifactWithLatestVersion(art string, ch chan string, wg *sync.WaitGroup) {
+func GetArtifactWithLatestVersion(art string, ch chan<- string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	artifactRepo := &Maven{}
